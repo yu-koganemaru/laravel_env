@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+
+  web:
+    container_name: web
+    build: ./docker
+    ports:
+      - 60:80
+    privileged: true
+    volumes:
+      - /opt/team-d/interval_grant_env/server:/var/www/html/public
+
+  db:
+    image: mysql:8.0
+    container_name: db-host
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: docker-database
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./docker/db/data:/var/lib/mysql
+      - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./docker/db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 6600:3306
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db-host
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    ports:
+      - 6060:80
+
